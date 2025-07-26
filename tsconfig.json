@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
+    "noImplicitAny": false,
+    "removeComments": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "release",
+    "typeRoots": ["./node_modules/@types", "./src/@types"],
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true
+  },
+  "lib": ["es2015"],
+  "include": ["src/index.ts", "src/**/*.ts"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}
