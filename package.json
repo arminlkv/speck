@@ -1,13 +1,11 @@
 {
   "name": "speck",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "release/index.js",
   "scripts": {
+    "build": "tsc",
     "build:dev": "tsc && node ./release/index.js",
-    "migrate:up": "node-pg-migrate up",
-    "migrate:down": "node-pg-migrate down",
-    "migrate:redo": "node-pg-migrate redo",
-    "migrate:create": "node-pg-migrate create"
+    "migrate": "ts-node ./migrations/migrator.ts"
   },
   "repository": {
     "type": "git",
@@ -21,17 +19,22 @@
   "homepage": "https://github.com/arminlkv/speck#readme",
   "description": "",
   "devDependencies": {
+    "@types/axios": "^0.9.36",
     "@types/express": "^5.0.3",
     "@types/lodash": "^4.17.20",
     "@types/node": "^24.1.0",
+    "@types/pg": "^8.15.4",
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "axios": "^1.11.0",
     "body-parser": "^2.2.0",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "lodash": "^4.17.21",
     "node-pg-migrate": "^8.0.3",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "ts-node": "^10.9.2",
+    "uuid": "^11.1.0"
   }
 }
