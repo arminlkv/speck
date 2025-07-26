@@ -20,11 +20,15 @@ import { dbPool } from "../src/database/Database";
         )
         WITH (oids = false);
 
+
         DROP TABLE IF EXISTS "sessions";
         CREATE TABLE "public"."sessions" (
             "expires" bigint NOT NULL,
             "google_access_token" text,
             "token" uuid NOT NULL,
+            "google_refresh_token" text,
+            "google_access_token_expiry" bigint,
+            "google_refresh_token_expiry" bigint,
             CONSTRAINT "sessions_expires" PRIMARY KEY ("expires")
         )
         WITH (oids = false);`);

@@ -8,18 +8,24 @@ export async function oauthCallback(req: express.Request, res: express.Response,
       
     try {
         // Exchange authorization code for access token
-        const tokens: OauthToken = await GoogleOauth.instance.obtainToken(code as string);
+        const tokens = await GoogleOauth.instance.obtainToken(code as string);
         
         const session: Session = await Session.findSession(state as string);
         if (!session) {
             throw new Error("User session not found.");
         }
 
-        await session.setGoogleAccessToken(tokens.accessToken);
+        await session.updateGoogleTokens({
+            accessToken: tokens.accessToken,
+            accessTokenExpiry: Math.floor(tokens.accessTokenExpiry / 1000),
+            refreshToken: tokens.refreshToken,
+            refreshTokenExpiry: tokens.refreshTokenExpiry,
+        });
     
-        res.redirect('/');
+        res.redirect(process.env.FRONTEND_URL);
+        next();
     } catch (error) {
         console.error('Error:', error);
-        res.redirect('/login');
+        res.redirect(`${process.env.FRONTEND_URL}/login`);
     }
 }

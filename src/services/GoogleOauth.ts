@@ -1,8 +1,11 @@
-import axios from "axios";
+import { google } from "googleapis";
+import { OAuth2Client } from "google-auth-library";
 
 type OauthToken = {
     accessToken: string;
-    idToken: string;
+    accessTokenExpiry: number;
+    refreshToken: string;
+    refreshTokenExpiry: number;
 };
 
 class GoogleOauth
@@ -16,6 +19,8 @@ class GoogleOauth
     private _redirectUri: string;
 
     private _scopes: string;
+
+    private _client: OAuth2Client;
 
 
     public static get instance(): GoogleOauth {
@@ -31,6 +36,12 @@ class GoogleOauth
         this._clientSecret = process.env.GOOGLE_CLIENT_SECRET;
         this._redirectUri = process.env.GOOGLE_REDIRECT_URI;
         this._scopes = process.env.GOOGLE_SCOPES;
+
+        this._client = new google.auth.OAuth2(
+            process.env.GOOGLE_CLIENT_ID,
+            process.env.GOOGLE_CLIENT_SECRET,
+            process.env.GOOGLE_REDIRECT_URI,
+        );
     }
 
     /**
@@ -38,7 +49,12 @@ class GoogleOauth
      * @returns {string}
      */
     public getRedirectUri(sessionToken: string): string {
-        return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${this._clientId}&redirect_uri=${this._redirectUri}&response_type=code&state=${sessionToken}&scope=${this._scopes}`;
+        return this._client.generateAuthUrl({
+            access_type: 'offline',
+            scope: this._scopes,
+            state: sessionToken,
+            prompt: 'consent',
+        });
     }
 
     /**
@@ -47,19 +63,13 @@ class GoogleOauth
      * @returns {Promise<OauthToken>}
      */
     public async obtainToken(code: string): Promise<OauthToken> {
-        const { data }: { data: { access_token: string, id_token: string } } = await axios.post('https://oauth2.googleapis.com/token', {
-            client_id: this._clientId,
-            client_secret: this._clientSecret,
-            code,
-            redirect_uri: this._redirectUri,
-            grant_type: 'authorization_code',
-        });
-
-        const { access_token, id_token } = data;
+        const { tokens } = await this._client.getToken(code) as any;
 
         return {
-            accessToken: access_token,
-            idToken: id_token,
+            accessToken: tokens.access_token,
+            accessTokenExpiry: tokens.expiry_date,
+            refreshToken: tokens.refresh_token,
+            refreshTokenExpiry: Math.floor(Date.now() / 1000) + tokens.refresh_token_expires_in,
         };
     }
 }

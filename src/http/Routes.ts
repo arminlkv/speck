@@ -11,13 +11,4 @@ export function registerRoutes(): void {
     WebServer.instance.get("/auth/google/callback", oauthCallback);
 
     WebServer.instance.get("/api/user/me", profileData);
-
-    WebServer.instance.get("/logout", (req, res) => {
-        res.redirect("/login");
-    });
-
-    WebServer.instance.get("/login", (req, res) => {
-        console.log("Login page accessed");
-        console.log(req);
-    });
 }

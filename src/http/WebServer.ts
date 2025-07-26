@@ -3,6 +3,7 @@
 import _ from "lodash";
 import express, { Express } from "express";
 import bodyParser from "body-parser";
+import cors from "cors";
 
 class WebServer {
   private _server: Express;
@@ -25,6 +26,11 @@ class WebServer {
     }
 
     this._server = express();
+    this._server.use(cors({
+      origin: '*',
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+    }));
     this._server.use(bodyParser.json());
     this._server.use(bodyParser.urlencoded({ extended: true }));
   }

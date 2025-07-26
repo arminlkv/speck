@@ -28,7 +28,12 @@ export async function profileData(req: express.Request, res: express.Response, n
     }
 
     // Use access_token or id_token to fetch user profile
-    const oauthUser: GoogleOauthUser = new GoogleOauthUser({ accessToken: session.googleAccessToken });
+    const oauthUser: GoogleOauthUser = new GoogleOauthUser({
+        accessToken: session.googleAccessToken,
+        refreshToken: session.googleRefreshToken,
+        accessTokenExpiry: session.googleAccessTokenExpiry,
+        refreshTokenExpiry: session.googleRefreshTokenExpiry,
+    });
     const userProfile = await oauthUser.getUserProfile();
 
     res.status(200).json(userProfile);
