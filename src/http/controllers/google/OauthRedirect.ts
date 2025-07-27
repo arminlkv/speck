@@ -10,4 +10,6 @@ export async function oauthRedirect(req: express.Request, res: express.Response,
         redirect_uri: redirectUri,
         session: session.token,
     });
+
+    next();
 }

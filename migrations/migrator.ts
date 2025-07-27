@@ -8,18 +8,15 @@ import { dbPool } from "../src/database/Database";
 
     await dbPool.query(`
         DROP TABLE IF EXISTS "events";
-        DROP SEQUENCE IF EXISTS events_id_seq;
-        CREATE SEQUENCE events_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1;
-
         CREATE TABLE "public"."events" (
-            "id" integer DEFAULT nextval('events_id_seq') NOT NULL,
-            "name" text NOT NULL,
-            "start_date" timestamp NOT NULL,
-            "end_date" timestamp NOT NULL,
-            CONSTRAINT "events_pkey" PRIMARY KEY ("id")
+            "summary" text NOT NULL,
+            "start_date" timestamptz NOT NULL,
+            "end_date" timestamptz NOT NULL,
+            "id" text NOT NULL,
+            "user_id" text NOT NULL,
+            CONSTRAINT "events_id" PRIMARY KEY ("id")
         )
         WITH (oids = false);
-
 
         DROP TABLE IF EXISTS "sessions";
         CREATE TABLE "public"."sessions" (

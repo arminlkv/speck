@@ -1,8 +1,9 @@
 import express from "express";
-import { GoogleOauthUser } from "../../../services/GoogleOauthUser";
+import { CalendarEntry, GoogleOauthUser } from "../../../services/GoogleOauthUser";
 import { Session } from "../../../services/Session";
+import { Calendar } from "../../../services/Calendar";
 
-export async function profileData(req: express.Request, res: express.Response, next: Function): Promise<void> {
+export async function syncCalendarData(req: express.Request, res: express.Response, next: Function): Promise<void> {
     const sessionToken: string = req.header("x-speck-session");
 
     if (!sessionToken) {
@@ -27,16 +28,32 @@ export async function profileData(req: express.Request, res: express.Response, n
         return;
     }
 
-    // Use access_token or id_token to fetch user profile
     const oauthUser: GoogleOauthUser = new GoogleOauthUser({
         accessToken: session.googleAccessToken,
         refreshToken: session.googleRefreshToken,
         accessTokenExpiry: session.googleAccessTokenExpiry,
         refreshTokenExpiry: session.googleRefreshTokenExpiry,
     });
-    const userProfile = await oauthUser.getUserProfile();
 
-    res.status(200).json(userProfile);
+    try {
+        const profileData = await oauthUser.getUserProfile();
+        const calendarData = await oauthUser.fetchCalendarData();
+    
+        await Calendar.sync(profileData.id, calendarData);
+    } catch (error) {
+        console.error(`Failed syncing calendar for session ${sessionToken}`);
+        console.error(error);
+
+        res.status(500).json({
+            error: "An error happend while syncing.",
+        });
+
+        return;
+    }
+
+    res.status(200).json({
+        message: "Sync finished."
+    });
 
     next();
 }

@@ -1,4 +1,3 @@
-import axios from "axios";
 import { google } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
 import { OauthToken } from "./GoogleOauth";
@@ -13,19 +12,22 @@ type GoogleUserProfile = {
     picture: string;
 };
 
+type CalendarEntry = {
+    id: string;
+    summary: string;
+    start: string;
+    end: string;
+};
+
 class GoogleOauthUser
 {
     private _accessToken: string;
-    private _accessTokenExpiry: number;
     private _refreshToken: string;
-    private _refreshTokenExpiry: number;
     private _oauthClient: OAuth2Client;
 
     public constructor(auth: OauthToken) {
         this._accessToken = auth.accessToken;
-        this._accessTokenExpiry = auth.accessTokenExpiry;
         this._refreshToken = auth.refreshToken;
-        this._refreshTokenExpiry = auth.refreshTokenExpiry;
 
         this._oauthClient = new google.auth.OAuth2(
             process.env.GOOGLE_CLIENT_ID,
@@ -40,12 +42,6 @@ class GoogleOauthUser
     }
 
     public async getUserProfile(): Promise<GoogleUserProfile> {
-        // const { data: profile } = await axios.get("https://www.googleapis.com/oauth2/v1/userinfo", {
-        //     headers: { Authorization: `Bearer ${this._accessToken}` },
-        // });
-        // this._oauthClient.
-
-        // return profile as GoogleUserProfile;
         const oauth2 = google.oauth2({
             auth: this._oauthClient,
             version: 'v2'
@@ -55,6 +51,38 @@ class GoogleOauthUser
 
         return res.data as GoogleUserProfile;
     }
+
+    public async fetchCalendarData(): Promise<CalendarEntry[]> {
+        const calendar = google.calendar({
+            version: 'v3',
+            auth: this._oauthClient,
+        });
+
+       const now = new Date();
+
+        // 3 months ago
+        const threeMonthsAgo = new Date(now);
+        threeMonthsAgo.setMonth(now.getMonth() - 3);
+
+        // 3 months from now
+        const threeMonthsLater = new Date(now);
+        threeMonthsLater.setMonth(now.getMonth() + 3);
+
+        const res = await calendar.events.list({
+            calendarId: 'primary',
+            timeMin: threeMonthsAgo.toISOString(),
+            timeMax: threeMonthsLater.toISOString(),
+            singleEvents: true,
+            orderBy: 'startTime',
+        });
+
+        return (res.data.items || []).map((event: any) => ({
+            id: event.id,
+            summary: event.summary,
+            start: event.start.dateTime || event.start.date,
+            end: event.end.dateTime   || event.end.date,
+        }));
+    }
 }
 
-export { GoogleOauthUser };
+export { GoogleOauthUser, CalendarEntry };

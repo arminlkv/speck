@@ -9,4 +9,6 @@ export async function healthCheck(req: express.Request, res: express.Response, n
         database: "ok",
         http: "ok",
     });
+
+    next();
 }

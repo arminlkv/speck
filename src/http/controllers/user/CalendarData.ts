@@ -1,8 +1,9 @@
 import express from "express";
-import { GoogleOauthUser } from "../../../services/GoogleOauthUser";
+import { CalendarEntry, GoogleOauthUser } from "../../../services/GoogleOauthUser";
 import { Session } from "../../../services/Session";
+import { Calendar } from "../../../services/Calendar";
 
-export async function profileData(req: express.Request, res: express.Response, next: Function): Promise<void> {
+export async function calendarData(req: express.Request, res: express.Response, next: Function): Promise<void> {
     const sessionToken: string = req.header("x-speck-session");
 
     if (!sessionToken) {
@@ -27,16 +28,17 @@ export async function profileData(req: express.Request, res: express.Response, n
         return;
     }
 
-    // Use access_token or id_token to fetch user profile
     const oauthUser: GoogleOauthUser = new GoogleOauthUser({
         accessToken: session.googleAccessToken,
         refreshToken: session.googleRefreshToken,
         accessTokenExpiry: session.googleAccessTokenExpiry,
         refreshTokenExpiry: session.googleRefreshTokenExpiry,
     });
-    const userProfile = await oauthUser.getUserProfile();
 
-    res.status(200).json(userProfile);
+    const profileData = await oauthUser.getUserProfile();
+    const entries: CalendarEntry[] = await Calendar.fetchEntries(profileData.id);
+
+    res.status(200).json(entries);
 
     next();
 }
