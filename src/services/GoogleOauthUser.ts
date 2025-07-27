@@ -52,6 +52,10 @@ class GoogleOauthUser
         return res.data as GoogleUserProfile;
     }
 
+    public getOauthClient(): OAuth2Client {
+        return this._oauthClient;
+    }
+
     public async fetchCalendarData(): Promise<CalendarEntry[]> {
         const calendar = google.calendar({
             version: 'v3',
